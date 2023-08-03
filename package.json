@@ -1,0 +1,41 @@
+{
+  "name": "TREASURY",
+  "version": "1.0.0",
+  "description": "coded by asim hayat Email: chaudhryasim5@gmail.com",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asim07/Sweeper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/asim07/Sweeper/issues"
+  },
+  "homepage": "https://github.com/asim07/Sweeper#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.4",
+    "@openzeppelin/hardhat-upgrades": "^2.0.2",
+    "@typechain/ethers-v6": "^0.4.3",
+    "@typechain/hardhat": "^8.0.3",
+    "chai": "^4.3.7",
+    "ethers": "^6.6.7",
+    "hardhat": "^2.17.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.4",
+    "typechain": "^8.3.1"
+  }
+}

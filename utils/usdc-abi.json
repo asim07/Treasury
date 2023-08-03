@@ -1,0 +1,46 @@
+[
+  {
+    "name": "increaseAllowance",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "name": "_addedValue",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "payable": false
+  },
+  {
+    "name": "transfer",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "payable": false
+  }
+]

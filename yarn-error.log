@@ -1,0 +1,70 @@
+Arguments: 
+  /home/asim/.nvm/versions/node/v16.20.1/bin/node /home/asim/.nvm/versions/node/v16.20.1/bin/yarn install
+
+PATH: 
+  /home/asim/.nvm/versions/node/v16.20.1/bin:/home/asim/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.20.1
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/asim/Desktop/Treasury/package.json: Unexpected token } in JSON at position 588
+      at JSON.parse (<anonymous>)
+      at /home/asim/.nvm/versions/node/v16.20.1/lib/node_modules/yarn/lib/cli.js:1629:59
+      at Generator.next (<anonymous>)
+      at step (/home/asim/.nvm/versions/node/v16.20.1/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /home/asim/.nvm/versions/node/v16.20.1/lib/node_modules/yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "TREASURY",
+    "version": "1.0.0",
+    "description": "coded by asim hayat Email: chaudhryasim5@gmail.com",
+    "main": "index.js",
+    "scripts": {
+      "run": "node index.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/asim07/Sweeper.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/asim07/Sweeper/issues"
+    },
+    "homepage": "https://github.com/asim07/Sweeper#readme",
+    "dependencies": {
+      "@openzeppelin/contracts": "^4.9.3",
+    },
+    "devDependencies": {
+      "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
+      "@nomicfoundation/hardhat-ethers": "^3.0.4",
+      "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+      "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+      "@nomicfoundation/hardhat-verify": "^1.0.4",
+      "@openzeppelin/hardhat-upgrades": "^2.0.2",
+      "@typechain/ethers-v6": "^0.4.3",
+      "@typechain/hardhat": "^8.0.3",
+      "chai": "^4.3.7",
+      "ethers": "^6.6.7",
+      "hardhat": "^2.17.0",
+      "hardhat-gas-reporter": "^1.0.9",
+      "solidity-coverage": "^0.8.4",
+      "typechain": "^8.3.1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
