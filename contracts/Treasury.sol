@@ -1,134 +1,155 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Interfaces/IERC20.sol";
+import "./Interfaces/IUniswapRouter.sol";
+import "./Interfaces/IAaveLendingPool.sol";
 
-interface IUniswapV2Router02 {
-    function swapExactTokensForTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to
-    ) external payable returns (uint256 amounts);
-}
+contract Treasury {
+    address private owner;
+    address private usdcTokenAddress; // USDC token contract address
+    address private usdtTokenAddress; // USDT token contract address
+    address private daiTokenAddress; // DAI token contract address
+    address private uniswapRouterAddress; // Uniswap V2 Router contract address
+    address private aaveLendingPoolAddress; // Aave LendingPool contract address
 
-interface IAaveLendingPool {
-    function deposit(
-        address asset,
-        uint256 amount,
-        address onBehalfOf,
-        uint16 referralCode
-    ) external;
+    uint256 public usdcAllocationRatio; // Allocation ratio for USDC
+    uint256 public usdtAllocationRatio; // Allocation ratio for USDT
+    uint256 public daiAllocationRatio; // Allocation ratio for DAI
 
-    function withdraw(
-        address asset,
-        uint256 amount,
-        address to
-    ) external returns (uint256);
-}
+    // Event emitted when funds are deposited
+    event Deposit(address indexed from, uint256 amount, address indexed token);
 
-contract Treasury is Ownable {
-    using SafeERC20 for IERC20;
-
-    IUniswapV2Router02 public uniswapRouter;
-    IAaveLendingPool public aaveLendingPool;
-
-    address public routerAddress;
-
-    IERC20 public usdcToken;
-    IERC20 public usdtToken;
-    IERC20 public daiToken;
-
-    uint256 public uniswapRatio;
-    uint256 public aaveRatio;
+    // Event emitted when funds are withdrawn
+    event Withdrawal(address indexed to, uint256 amount, address indexed token);
 
     constructor(
-        address _uniswapRouter,
-        address _aaveLendingPool,
-        address _usdcToken,
-        address _usdtToken,
-        address _daiToken
+        address _usdcTokenAddress,
+        address _usdtTokenAddress,
+        address _daiTokenAddress,
+        address _uniswapRouterAddress,
+        address _aaveLendingPoolAddress
     ) {
-        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
-        aaveLendingPool = IAaveLendingPool(_aaveLendingPool);
-        usdcToken = IERC20(_usdcToken);
-        usdtToken = IERC20(_usdtToken);
-        daiToken = IERC20(_daiToken);
-        routerAddress = _uniswapRouter;
+        owner = msg.sender;
+        usdcTokenAddress = _usdcTokenAddress;
+        usdtTokenAddress = _usdtTokenAddress;
+        daiTokenAddress = _daiTokenAddress;
+        uniswapRouterAddress = _uniswapRouterAddress;
+        aaveLendingPoolAddress = _aaveLendingPoolAddress;
     }
 
-    function setRatios(
-        uint256 _uniswapRatio,
-        uint256 _aaveRatio
+    // Modifier to ensure only the owner can call certain functions
+    modifier onlyOwner() {
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
+        _;
+    }
+
+// Deposit funds into the treasury contract
+function deposit(uint256 amount) external {
+    IERC20 token = IERC20(usdcTokenAddress);
+
+    require(
+        token.transferFrom(msg.sender, address(this), amount),
+        "Failed to transfer tokens"
+    );
+
+    uint256 usdtAmount = (amount * usdtAllocationRatio) / 100;
+    uint256 daiAmount = (amount * daiAllocationRatio) / 100;
+
+    // IUniswapRouter uniswapRouter = IUniswapRouter(uniswapRouterAddress);
+
+    address[] memory pathToUSDT = new address[](2);
+    pathToUSDT[0] = usdcTokenAddress;
+    pathToUSDT[1] = usdtTokenAddress;
+
+    address[] memory pathToDAI = new address[](2);
+    pathToDAI[0] = usdcTokenAddress;
+    pathToDAI[1] = address(daiTokenAddress);
+
+    if (usdtAmount > 0) {
+        token.approve(address(uniswapRouterAddress), usdtAmount);
+        IUniswapRouter(uniswapRouterAddress).swapExactTokensForTokens(
+            usdtAmount,
+            0,
+            pathToUSDT,
+            address(this)
+        );
+    }
+
+    if (daiAmount > 0) {
+        token.approve(address(uniswapRouterAddress), daiAmount);
+        IUniswapRouter(uniswapRouterAddress).swapExactTokensForTokens(
+            daiAmount,
+            0,
+            pathToDAI,
+            address(this)
+        );
+    }
+
+    emit Deposit(msg.sender, amount, usdcTokenAddress);
+}
+
+
+    // Withdraw funds from the treasury contract
+    function withdraw(uint256 amount, address tokenAddress) external onlyOwner {
+        IERC20 token = IERC20(tokenAddress);
+        require(
+            token.balanceOf(address(this)) >= amount,
+            "Insufficient token balance"
+        );
+
+        require(
+            token.transfer(msg.sender, amount),
+            "Failed to transfer tokens"
+        );
+        emit Withdrawal(msg.sender, amount, tokenAddress);
+    }
+
+    // Set the allocation ratios for tokens
+    function setAllocationRatios(
+        uint256 _usdcAllocationRatio,
+        uint256 _usdtAllocationRatio,
+        uint256 _daiAllocationRatio
     ) external onlyOwner {
-        require(_uniswapRatio + _aaveRatio == 100, "Ratios must add up to 100");
-        uniswapRatio = _uniswapRatio;
-        aaveRatio = _aaveRatio;
-    }
-
-    function deposit(uint256 amount) external {
-        usdcToken.safeTransferFrom(msg.sender, address(this), amount);
-
-        uint256 usdtAmount = (amount * uniswapRatio) / 100;
-        uint256 daiAmount = (amount * aaveRatio) / 100;
-
-        address[] memory path = new address[](2);
-        path[0] = address(usdcToken);
-        path[1] = address(usdtToken);
-
-        usdcToken.approve(address(uniswapRouter), usdtAmount);
-        IUniswapV2Router02(routerAddress).swapExactTokensForTokens(
-            usdtAmount,
-            0,
-            path,
-            address(this)
+        require(
+            _usdcAllocationRatio + _usdtAllocationRatio + _daiAllocationRatio ==
+                100,
+            "Allocation ratios must add up to 100"
         );
 
-        // usdcToken.approve(address(aaveLendingPool), daiAmount);
-        // aaveLendingPool.deposit(
-        //     address(usdcToken),
-        //     daiAmount,
-        //     address(this),
-        //     0
-        // );
+        usdcAllocationRatio = _usdcAllocationRatio;
+        usdtAllocationRatio = _usdtAllocationRatio;
+        daiAllocationRatio = _daiAllocationRatio;
     }
 
-    function withdraw(uint256 amount) external onlyOwner {
-        uint256 usdtAmount = (amount * uniswapRatio) / 100;
-        uint256 daiAmount = (amount * aaveRatio) / 100;
+    // Swap allocated funds between different tokens using Uniswap
+    function swapTokens() external onlyOwner {
+        // Similar to the previous code for swapping tokens using Uniswap
+        
+    }
 
-        uint256[] memory amounts = new uint256[](2);
-        amounts[0] = usdtAmount;
-        amounts[1] = daiAmount;
+    // Deposit tokens into Aave
+    function depositToAave(uint256 amount, address tokenAddress) external onlyOwner {
+        IERC20 token = IERC20(tokenAddress);
+        IAaveLendingPool aaveLendingPool = IAaveLendingPool(aaveLendingPoolAddress);
 
-        aaveLendingPool.withdraw(address(usdcToken), daiAmount, address(this));
-        uniswapRouter.swapExactTokensForTokens(
-            usdtAmount,
-            0,
-            getPathForTokens(address(usdtToken)),
-            address(this)
+        token.approve(aaveLendingPoolAddress, amount);
+        aaveLendingPool.deposit(tokenAddress, amount, address(this), 0);
+    }
+
+    // Withdraw tokens from Aave
+    function withdrawFromAave(uint256 amount, address tokenAddress) external onlyOwner {
+        IAaveLendingPool aaveLendingPool = IAaveLendingPool(aaveLendingPoolAddress);
+
+        aaveLendingPool.withdraw(tokenAddress, amount, address(this));
+
+        IERC20 token = IERC20(tokenAddress);
+        require(
+            token.transfer(owner, amount),
+            "Failed to transfer tokens from Aave"
         );
-
-        usdtToken.transfer(owner(), usdtAmount);
-        daiToken.transfer(owner(), daiAmount);
-    }
-
-    function calculateYield() external view returns (uint256) {
-        uint256 usdtBalance = usdtToken.balanceOf(address(this));
-        uint256 daiBalance = daiToken.balanceOf(address(this));
-
-        return usdtBalance + daiBalance;
-    }
-
-    function getPathForTokens(
-        address token
-    ) public view returns (address[] memory) {
-        address[] memory path = new address[](2);
-        path[0] = address(token);
-        path[1] = address(usdcToken);
-
-        return path;
     }
 }
