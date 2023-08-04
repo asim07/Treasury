@@ -1,7 +1,7 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  const uniswapRouterAddress = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+  const uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
   const aaveLendingPoolAddress = "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf";
   const usdcTokenAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
   const usdtTokenAddress = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
