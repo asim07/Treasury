@@ -42,5 +42,23 @@
     ],
     "stateMutability": "nonpayable",
     "payable": false
+  },
+  {
+    "name": "balanceOf",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "payable": false
   }
 ]
