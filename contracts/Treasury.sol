@@ -141,11 +141,10 @@ contract Treasury {
     ) external onlyOwner {
         IERC20 token = IERC20(from);
         require(token.balanceOf(address(this)) >= amount, "low balance");
-                address[] memory path = new address[](2);
-                path[0] = from;
-                path[1]= to;
-                swap(path,amount);
-
+        address[] memory path = new address[](2);
+        path[0] = from;
+        path[1] = to;
+        swap(path, amount);
     }
 
     // Deposit tokens into Aave
