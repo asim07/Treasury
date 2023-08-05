@@ -700,6 +700,11 @@
     "@nomicfoundation/solidity-analyzer-win32-ia32-msvc" "0.1.1"
     "@nomicfoundation/solidity-analyzer-win32-x64-msvc" "0.1.1"
 
+"@openzeppelin/contracts@^4.9.3":
+  "integrity" "sha512-He3LieZ1pP2TNt5JbkPA4PNT9WC3gOTOlDcFGJW4Le4QKqwmiNJCRt44APfxMxvq7OugU/cqYuPcSBzOw38DAg=="
+  "resolved" "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.9.3.tgz"
+  "version" "4.9.3"
+
 "@openzeppelin/defender-base-client@^1.47.0":
   "integrity" "sha512-xnopi1tZIh1zY9KF3mo9S2YgMP0I3T11r6jiO1teAw6M0U5Fx2SCjfCVoKV7CLAQGH1VHmAZ7w2CmcEsFvlQng=="
   "resolved" "https://registry.npmjs.org/@openzeppelin/defender-base-client/-/defender-base-client-1.47.1.tgz"

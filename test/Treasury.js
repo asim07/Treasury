@@ -54,8 +54,8 @@ describe("Treasury", function () {
 
         let usdc_amount = await usdcContract.balanceOf(treasury_address);
         let busd_amount = await busdContract.balanceOf(treasury_address);
-        let dai_amount = await daiContract.balanceOf(treasury_address);     
-
+        let dai_amount = await daiContract.balanceOf(treasury_address);
+        
         await treasury.connect(owner).withdraw(usdc_amount,usdcTokenAddress);
         await treasury.connect(owner).withdraw(busd_amount,busdTokenAddress);
         await treasury.connect(owner).withdraw(dai_amount,daiTokenAddress);
@@ -105,6 +105,7 @@ describe("Treasury", function () {
         await treasury.connect(owner).swapToken(usdcTokenAddress,daiTokenAddress,usdc_amount);
 
     });
+
 
     // Add more test cases as needed
 });

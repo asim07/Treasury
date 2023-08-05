@@ -4,8 +4,13 @@ pragma solidity ^0.8.0;
 import "./Interfaces/IERC20.sol";
 import "./Interfaces/IUniswapRouter.sol";
 import "./Interfaces/IAaveLendingPool.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
+
 
 contract Treasury {
+    using SafeMath for uint256;
+
     address private owner;
     address private usdcTokenAddress; // USDC token contract address
     address private busdTokenAddress; // BUSD token contract address
@@ -13,6 +18,7 @@ contract Treasury {
     address private uniswapRouterAddress; // Uniswap V2 Router contract address
     address private aaveLendingPoolAddress; // Aave LendingPool contract address
 
+    uint256 private totalDaiDeposited;
     uint256 public usdcAllocationRatio; // Allocation ratio for USDC
     uint256 public busdAllocationRatio; // Allocation ratio for BUSD
     uint256 public daiAllocationRatio; // Allocation ratio for DAI
@@ -90,7 +96,6 @@ contract Treasury {
             token.balanceOf(address(this)) >= amount,
             "Insufficient token balance"
         );
-
         require(
             token.transfer(msg.sender, amount),
             "Failed to transfer tokens"
@@ -178,4 +183,5 @@ contract Treasury {
             "Failed to transfer tokens from Aave"
         );
     }
+
 }

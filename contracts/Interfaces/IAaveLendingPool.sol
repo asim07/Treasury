@@ -9,9 +9,25 @@ interface IAaveLendingPool {
         uint16 referralCode
     ) external;
 
-    function withdraw(
-        address asset,
-        uint256 amount,
-        address to
-    ) external; 
+    function withdraw(address asset, uint256 amount, address to) external;
+
+    function getReserveData(
+        address asset
+    )
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint40
+        );
 }
