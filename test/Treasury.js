@@ -1,77 +1,110 @@
-// const { expect } = require("chai");
-// const { ethers } = require("hardhat");
-// const contractAbi = require('../utils/usdc-abi');
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+describe("Treasury", function () {
+    let treasury_address;
+    let treasury;
+    let owner;
 
-// describe("Treasury", function () {
-//   let Treasury;
-//   let treasury;
-//   let owner;
-//   let addr1;
-
-//   const uniswapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
-//   const aaveLendingPoolAddress = "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf";
-//   const usdcTokenAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-//   const usdtTokenAddress = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-//   const daiTokenAddress = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-
-//   const USDC_WHALE = "0xf977814e90da44bfa03b6295a0616a897441acec"
-//   before(async function () {
-//     [owner, addr1] = await ethers.getSigners();
-//   });
-
-//   beforeEach(async function () {
-//     treasury = await ethers.deployContract("Treasury", [
-//       uniswapRouterAddress,
-//       aaveLendingPoolAddress,
-//       usdcTokenAddress,
-//       usdtTokenAddress,
-//       daiTokenAddress,
-//     ]);
-//     await treasury.waitForDeployment();
-//     const addres = treasury.getAddress();
-//     // console.log("treasury address :",addr1.address);
-//   });
-
-//   it("should set correct ratios", async function () {
-//     await treasury.connect(owner).setRatios(70, 30);
-//     expect(await treasury.uniswapRatio()).to.equal(70);
-//     expect(await treasury.aaveRatio()).to.equal(30);
-//   });
-
-//   it("should deposit and withdraw funds correctly", async function () {
-//     const impersonatedSigner = await ethers.getImpersonatedSigner(USDC_WHALE);
-//     const usdtContract = await ethers.getContractAt('IERC20', usdcTokenAddress);
-
-//     // console.log
-//     // const tx = await owner.sendTransaction({
-//     //   to: USDC_WHALE,
-//     //   value: ethers.parseEther("10"),
-//     // });
-
-//     await usdtContract.connect(impersonatedSigner).transfer(owner, 10)
-//     console.log("it works");
-
-//     const initialBalance = ethers.parseEther("1000");
-//     const depositAmount = ethers.parseEther("500");
-//     const ownerStartingBalance = await ethers.provider.getBalance(owner);
-//     const tx1 = await usdtContract.balanceOf(owner);
-//     console.log(tx1)
+    const uniswapRouterAddress = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+    const aaveLendingPoolAddress = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9";
+    const usdcTokenAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+    const busdTokenAddress = "0x4Fabb145d64652a948d72533023f6E7A623C7C53";
+    const daiTokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 
 
-//     //     await treasury.connect(addr1).deposit(depositAmount);
-//     //     expect(await treasury.calculateYield()).to.equal(0);
+    const USDC_WHALE = "0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503";
 
-//     //     await treasury.connect(addr1).withdraw(depositAmount);
-//     //     const ownerEndingBalance = await owner.getBalance();
-//     //     expect(ownerEndingBalance).to.be.gt(ownerStartingBalance);
-//   });
+    before(async function () {
+        [owner] = await ethers.getSigners();
+    });
 
-//   //   it("should calculate yield correctly", async function () {
-//   //     const depositAmount = ethers.parseEther("500");
-//   //     await treasury.connect(addr1).deposit(depositAmount);
-//   //     const yieldAmount = await treasury.calculateYield();
-//   //     expect(yieldAmount).to.be.gt(0);
-//   //   });
+    beforeEach(async function () {
+        treasury = await ethers.deployContract("Treasury", [
+            usdcTokenAddress,
+            busdTokenAddress,
+            daiTokenAddress,
+            uniswapRouterAddress,
+            aaveLendingPoolAddress,
+        ]);
+        await treasury.waitForDeployment();
+        treasury_address = await treasury.getAddress();
+        // console.log("contract deployed : ",treasury_address);
+    });
 
-//   // Add more test cases as needed
-// });
+    it("should set correct ratios", async function () {
+        await treasury.connect(owner).setAllocationRatios(30,30,40);
+        expect(await treasury.usdcAllocationRatio()).to.equal(30);
+        expect(await treasury.busdAllocationRatio()).to.equal(30);
+        expect(await treasury.daiAllocationRatio()).to.equal(40);
+    });
+
+    it("should deposit USDC, swapp to other tokens( BUSD, DAI) according to Ratio and withdraw funds correctly  ( USDC , BUSD , DAI )", async function () {
+        const usd_whale = await ethers.getImpersonatedSigner(USDC_WHALE);
+        const usdcContract = await ethers.getContractAt('IERC20', usdcTokenAddress);
+        const busdContract = await ethers.getContractAt('IERC20', busdTokenAddress);
+        const daiContract = await ethers.getContractAt('IERC20', daiTokenAddress);
+
+        await treasury.setAllocationRatios(33,33,34);
+        const amount = ethers.parseUnits('50000',6);
+        await usdcContract.connect(usd_whale).transfer(owner,amount );
+
+        await usdcContract.connect(owner).approve(treasury_address, amount);
+        await treasury.connect(owner).deposit(amount);
+
+
+        let usdc_amount = await usdcContract.balanceOf(treasury_address);
+        let busd_amount = await busdContract.balanceOf(treasury_address);
+        let dai_amount = await daiContract.balanceOf(treasury_address);     
+
+        await treasury.connect(owner).withdraw(usdc_amount,usdcTokenAddress);
+        await treasury.connect(owner).withdraw(busd_amount,busdTokenAddress);
+        await treasury.connect(owner).withdraw(dai_amount,daiTokenAddress);
+
+    });
+
+    it("Deposit funds to aave and withdraw", async function () {
+        const usd_whale = await ethers.getImpersonatedSigner(USDC_WHALE);
+        const usdcContract = await ethers.getContractAt('IERC20', usdcTokenAddress);
+        const busdContract = await ethers.getContractAt('IERC20', busdTokenAddress);
+        const daiContract = await ethers.getContractAt('IERC20', daiTokenAddress);
+
+        await treasury.setAllocationRatios(33,33,34);
+        const amount = ethers.parseUnits('50000',6);
+        await usdcContract.connect(usd_whale).transfer(owner,amount );
+
+        await usdcContract.connect(owner).approve(treasury_address, amount);
+        await treasury.connect(owner).deposit(amount);
+
+        let usdc_amount = await usdcContract.balanceOf(treasury_address);
+        let busd_amount = await busdContract.balanceOf(treasury_address);
+        let dai_amount = await daiContract.balanceOf(treasury_address);
+
+        await treasury.connect(owner).depositToAave(usdc_amount,usdcTokenAddress);
+        // await treasury.connect(owner).depositToAave(busd_amount,busdTokenAddress); aave not supporting deposit BUSD
+        await treasury.connect(owner).depositToAave(dai_amount,daiTokenAddress);
+
+        await treasury.connect(owner).withdrawFromAave(usdc_amount,usdcTokenAddress);
+        await treasury.connect(owner).withdrawFromAave(dai_amount,daiTokenAddress);
+
+
+    });
+
+    it("Swapping tokens from USDC to DAI", async function () {
+        const usd_whale = await ethers.getImpersonatedSigner(USDC_WHALE);
+        const usdcContract = await ethers.getContractAt('IERC20', usdcTokenAddress);
+
+        await treasury.setAllocationRatios(33,33,34);
+        const amount = ethers.parseUnits('50000',6);
+        await usdcContract.connect(usd_whale).transfer(owner,amount );
+
+        await usdcContract.connect(owner).approve(treasury_address, amount);
+        await treasury.connect(owner).deposit(amount);
+
+        let usdc_amount = await usdcContract.balanceOf(treasury_address);
+
+        await treasury.connect(owner).swapToken(usdcTokenAddress,daiTokenAddress,usdc_amount);
+
+    });
+
+    // Add more test cases as needed
+});
